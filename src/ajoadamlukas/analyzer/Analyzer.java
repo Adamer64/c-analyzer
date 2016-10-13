@@ -75,6 +75,10 @@ public class Analyzer {
         return includes;
     }
 
+    public List<String> getVariableNames() { return variableNames; }
+
+    public List<String> getVariables() { return variables; }
+
     public void viewVariableNames() {
         System.out.println("Variable names:");
         Iterator<String> iterator = variableNames.iterator(); // iterate
