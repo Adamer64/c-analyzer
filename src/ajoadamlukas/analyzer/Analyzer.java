@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
  */
 public class Analyzer {
     protected List<String> lines;
-    protected List<String> includes = new ArrayList<>();
+    protected List<String> includes = new ArrayList<>();//test
     protected List<String> variables = new ArrayList<>();
     protected List<String> variableNames = new ArrayList<>();
     protected String patternIncludes = "(#include)(.)+";
