@@ -20,7 +20,7 @@ public class Analyzer {
     protected List<String> variables = new ArrayList<>();
     protected List<String> variableNames = new ArrayList<>();
     protected String patternIncludes = "(#include)(.)+";
-    protected String patternVariables = "(\\t|\\s)*(int|char)(\\**)(\\s)(\\**)(\\w+)(\\s*)(=)(\\s*)((\\d+)|(\".*\"))(;)";
+    protected String patternVariables = "(\\t|\\s)*(int|char)(\\**)(\\s)(\\**)(\\w+)(\\s*)(=)(\\s*)((\\d+)|(\".*\"))(;)"; // int without assigned value doesn't work
 
     public void Analyzer() {
     }
