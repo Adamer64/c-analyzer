@@ -12,5 +12,9 @@ public class Main {
         analyzer.viewIncludes();
         analyzer.viewVariables();
         analyzer.viewVariableNames();
+        analyzer.readFile("D:/input.txt");
+        analyzer.viewNewLines();
+
+        return;
     }
 }
