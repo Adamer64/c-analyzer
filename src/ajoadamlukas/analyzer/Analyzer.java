@@ -90,7 +90,7 @@ public class Analyzer {
                 while(k<i) {
 //                    String randomString = Long.toHexString(Double.doubleToLongBits(Math.random()));
                     String randomString = "a"+Integer.toString(k);
-                    String str = "(.*)(\\s)(\\[*)(" + nextVar[k] + ")(\\]*)(\\s*)(.*)";
+                    String str = "(.*)(\\s)(\\[*)(" + nextVar[k] + ")(\\]*)(\\s*)(.*)"; // test
 //                    String str = "(.*)"+nextVar[k]+"(.*)";
 //                    String str2 = "("+nextVar[k]+")([^()\\]=\\s\\+\\-\\*]*[^\\(\\[])";
                     String str2 = "("+nextVar[k]+")([^; \\w])"; //(?<!\w)
