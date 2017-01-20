@@ -14,21 +14,21 @@ import java.util.regex.Pattern;
 
 public class Encryptor {
 
+    //STATIC VARIABLES
+    private static String patternStrings = "(.*)(\")([^%]*)(\")(.*)";
+    private static String patternComments = "(.*)(//)(.*)";
+
+    //INSTANCE VARIABLES
     private File output;
-
-
     private List<String> lines;
     private List<String> strings = new ArrayList<>();
     private List<String> comments = new ArrayList<>();
-    private List<String> stringValues = new ArrayList<>();
-    private List<String> commentValues = new ArrayList<>();
-    private String patternStrings = "(.*)(\")([^%]*)(\")(.*)";
-    private String patternComments = "(.*)(//)(.*)";
 
     public Encryptor (String inputFile) {
-        String outputName = "./obfuscated_" + inputFile;
+        String outputName = "./obfuscated_" + inputFile;  // outputfile name definition
         output = new File(outputName);
 
+        //  copy input file to output file
         try {
             lines = Files.readAllLines(Paths.get(inputFile));
             PrintWriter pw = new PrintWriter(output);
@@ -42,45 +42,28 @@ public class Encryptor {
     }
 
     public void obfuscate() throws IOException {
-
-        extractValues();
         deleteComments();
         encryptStrings();
         removeWhitespace();
-
         viewCode();
-    }
-
-    private String insertCharAt(String st, char ch, int index){
-        //1 Exception if st == null
-        //2 Exception if index<0 || index>st.length()
-
-        if (st == null){
-            throw new NullPointerException("Null string!");
-        }
-
-        if (index < 0 || index > st.length())
-        {
-            throw new IndexOutOfBoundsException("Try to insert at negative location or outside of string");
-        }
-        return st.substring(0, index)+ch+st.substring(index, st.length());
     }
 
     private void removeWhitespace() {
 
-        List<String> fileContent = null;
+        List<String> fileContent;
         try {
-            fileContent = new ArrayList<>(Files.readAllLines(Paths.get(output.getPath()), StandardCharsets.UTF_8));
+            fileContent = new ArrayList<>(Files.readAllLines(Paths.get(output.getPath()), StandardCharsets.UTF_8));  // get current file content
 
+            // put the file content into one line
             StringBuilder sb = new StringBuilder();
             for (String s : fileContent) {
-
-                sb.append(s + "\n");
+                sb.append(s).append("\n");
             }
             String wholeFile = new String(sb);
 
-            wholeFile = wholeFile.replaceAll("\\s","");
+            wholeFile = wholeFile.replaceAll("\\s", "");  // get rid of all whitespaces and terminators
 
+            // input linefeed on every 50th position
             int length = 50;
             int i = 1;
             while ( i * length < wholeFile.length()) {
@@ -88,65 +71,15 @@ public class Encryptor {
                 i++;
             }
 
+            // write changes to output
             PrintWriter out = new PrintWriter(output.getName());
             out.println(wholeFile);
             out.close();
-
 
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-
-    }
-
-    private void extractValues() {
-        Iterator<String> iterator1 = strings.iterator(); // create iterator
-
-        String next;
-        while (iterator1.hasNext()) { // is there a line to read
-            next = iterator1.next(); // as a variable because we would jump to the next line when using iterator.next() again
-            try {
-                Pattern pattern = Pattern.compile("\"(.*)\"");
-                Matcher matcher = pattern.matcher(next);
-                if (matcher.find()) {
-                    stringValues.add(matcher.group(1));
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        for (String comment : comments) { // is there a line to read
-            next = comment; // as a variable because we would jump to the next line when using iterator.next() again
-            try {
-                Pattern pattern = Pattern.compile("(//.*)");
-                Matcher matcher = pattern.matcher(next);
-                if (matcher.find()) {
-                    commentValues.add(matcher.group(1));
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-    }
-
-    private String encrypt(String strClearText, String strKey) throws Exception {
-        String strData;
-
-        try {
-            SecretKeySpec skeyspec=new SecretKeySpec(strKey.getBytes(), "Blowfish");
-            Cipher cipher=Cipher.getInstance("Blowfish");
-            cipher.init(Cipher.ENCRYPT_MODE, skeyspec);
-            byte[] encrypted=cipher.doFinal(strClearText.getBytes());
-            strData=new String(encrypted);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new Exception(e);
-        }
-        return strData;
     }
 
     private void deleteComments(){
@@ -160,6 +93,7 @@ public class Encryptor {
             while (iterator.hasNext()) { // is there a line to read
                 next = iterator.next(); // as a variable because we would jump to the next line when using iterator.next() again
                 try {
+                    // find all lines containing comments
                     if (next.matches(patternComments)){
                         newComments.add(next);
                     }
@@ -167,7 +101,7 @@ public class Encryptor {
                     e.printStackTrace();
                 }
             }
-            comments.addAll(newComments);
+            comments.addAll(newComments); // add lines to collection
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -175,8 +109,9 @@ public class Encryptor {
 
         List<String> fileContent;
         try {
-            fileContent = new ArrayList<>(Files.readAllLines(Paths.get(output.getPath()), StandardCharsets.UTF_8));
+            fileContent = new ArrayList<>(Files.readAllLines(Paths.get(output.getPath()), StandardCharsets.UTF_8));  //obtain file content
 
+            // check all lines for comments and handle remove them
             for (int i = 0; i < fileContent.size(); i++) {
 
                 Iterator<String> iterator = comments.iterator(); // create iterator
@@ -186,13 +121,15 @@ public class Encryptor {
                     next = iterator.next(); // as a variable because we would jump to the next line when using iterator.next() again
 
                     if (fileContent.get(i).equals(next)) {
-                        String newLine = new String();
+                        String newLine = "";
+
+                        // check for comment
                         Pattern pattern = Pattern.compile("(\\s*//.*)");
                         Matcher matcher = pattern.matcher(next);
                         if (matcher.find()) {
                             String comment = matcher.group(1);
                             if (next.contains(comment)){
-                                newLine = next.replace(comment, "");
+                                newLine = next.replace(comment, ""); // remove comments
                             }
                         }
 
@@ -275,36 +212,6 @@ public class Encryptor {
         }
     }
 
-
-
-    private void viewStrings() {
-        System.out.println("String lines:");
-        for (String string : strings) {
-            System.out.println(string);
-        }
-        System.out.println();
-
-        System.out.println("Strings:");
-        for (String stringValue : stringValues) {
-            System.out.println(stringValue);
-        }
-        System.out.println();
-    }
-
-    private void viewComments() {
-        System.out.println("Comment lines:");
-        for (String comment : comments) {
-            System.out.println(comment);
-        }
-        System.out.println();
-
-        System.out.println("Comments: ");
-        for (String commentValue : commentValues) {
-            System.out.println(commentValue);
-        }
-        System.out.println();
-    }
-
     private void viewCode() {
         System.out.println("Code:");
         try {
@@ -319,5 +226,38 @@ public class Encryptor {
         }
     }
 
+    private String insertCharAt(String st, char ch, int index){
+
+        // null string case
+        if (st == null){
+            throw new NullPointerException("Null string!");
+        }
+
+        // invalid index case
+        if (index < 0 || index > st.length())
+        {
+            throw new IndexOutOfBoundsException("Try to insert at negative location or outside of string");
+        }
+
+        // return string with inserted char
+        return st.substring(0, index)+ch+st.substring(index, st.length());
+    }
+
+    private String encrypt(String strClearText, String strKey) throws Exception {
+        String strData;
+
+        try {
+            SecretKeySpec skeyspec=new SecretKeySpec(strKey.getBytes(), "Blowfish");
+            Cipher cipher=Cipher.getInstance("Blowfish");
+            cipher.init(Cipher.ENCRYPT_MODE, skeyspec);
+            byte[] encrypted=cipher.doFinal(strClearText.getBytes());
+            strData=new String(encrypted);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception(e);
+        }
+        return strData;
+    }
 
 }
