@@ -1,4 +1,4 @@
-package ajoadamlukas.analyzer.ajo;
+package ajoadamlukas.analyzer.tools;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,8 +18,8 @@ import java.util.regex.Pattern;
 public class Formatter {
 
     // STATIC VARIABLES
-    private static String patternComments = "(.*)(//)(.*)";
     private static File output;
+    private static String patternComments = "(.*)(//)(.*)";
 
     //INSTANCE VARIABLES
     private List<String> comments = new ArrayList<>();
@@ -27,18 +27,6 @@ public class Formatter {
 
     public Formatter (String outputName) {
         output = new File(outputName);
-
-        //  copy input file to output file
-        try {
-            lines = Files.readAllLines(Paths.get(outputName));
-            PrintWriter pw = new PrintWriter(output);
-            for (String line : lines) {
-                pw.println(line);
-            }
-            pw.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     public void deleteComments(){
@@ -117,7 +105,8 @@ public class Formatter {
             }
             String wholeFile = new String(sb);
 
-            wholeFile = wholeFile.replaceAll("\\s", "");  // get rid of all whitespaces and terminators
+            wholeFile = wholeFile.replaceAll("\\n", "");  // get rid of all whitespaces and terminators
+            wholeFile = wholeFile.replaceAll("\\s+", " ");
 
             // input linefeed on every 50th position
             int length = 50;

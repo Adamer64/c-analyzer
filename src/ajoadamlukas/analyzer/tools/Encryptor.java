@@ -1,4 +1,4 @@
-package ajoadamlukas.analyzer.ajo;
+package ajoadamlukas.analyzer.tools;
 
 import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
@@ -6,6 +6,9 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.DigestException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -15,8 +18,8 @@ import java.util.regex.Pattern;
 public class Encryptor {
 
     // STATIC VARIABLES
-    private static String patternStrings = "(.*)(\")([^%]*)(\")(.*)";
     private static File output;
+    private static String patternStrings = "(.*)(\")([^%]*)(\")(.*)";
 
     // INSTANCE VARIABLES
     private List<String> lines;
@@ -24,18 +27,6 @@ public class Encryptor {
 
     public Encryptor (String outputName) {
         output = new File(outputName);
-
-        // read current state of output file
-        try {
-            lines = Files.readAllLines(Paths.get(outputName));
-            PrintWriter pw = new PrintWriter(output);
-            for (String line : lines) {
-                pw.println(line);
-            }
-            pw.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     public void encryptStrings() {
@@ -76,18 +67,16 @@ public class Encryptor {
                     next = iterator.next(); // as a variable because we would jump to the next line when using iterator.next() again
 
                     if (fileContent.get(i).equals(next)) {
-
                         String newLine = "";
                         Pattern pattern = Pattern.compile("(\\\"[^%]*\\\")");
                         Matcher matcher = pattern.matcher(next);
+
                         if (matcher.find()) {
-
                             String string = matcher.group(1);
-
-                            String encrypted = encrypt(string, "ajobilec");
+//                            String encrypted = encrypt(string, "ajobilec");
+                            String encrypted = encryptMD5(string);
 
                             if (next.contains(string)) {
-
                                 newLine = next.replace(string, encrypted);
                             }
                         }
@@ -103,6 +92,24 @@ public class Encryptor {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private String encryptMD5(String string) {
+        byte[] thedigest = "FAILED".getBytes();
+
+        try {
+            byte[] bytesOfMessage = string.getBytes("UTF-8");
+
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            thedigest = md.digest(bytesOfMessage);
+
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        return thedigest.toString();
     }
 
     private String encrypt(String strClearText, String strKey) throws Exception {
