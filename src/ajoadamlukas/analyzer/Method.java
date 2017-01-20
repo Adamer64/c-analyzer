@@ -27,7 +27,7 @@ public class Method{
     }
 
     public boolean hasSameSignature(Method method){
-        if (this.hasSameReturnType(method) && this.hasSameArguments(method))
+        if (/*this.hasSameReturnType(method) &&*/ this.hasSameArguments(method))
             return true;
         return false;
     }
