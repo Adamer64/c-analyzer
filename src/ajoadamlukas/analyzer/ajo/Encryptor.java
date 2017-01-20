@@ -15,7 +15,6 @@ import java.util.regex.Pattern;
 public class Encryptor {
 
     private File output;
-    private String outputName = "./undefined.c";
 
 
     private List<String> lines;
@@ -27,7 +26,7 @@ public class Encryptor {
     private String patternComments = "(.*)(//)(.*)";
 
     public Encryptor (String inputFile) {
-        outputName = new String("./obfuscated_" + inputFile);
+        String outputName = "./obfuscated_" + inputFile;
         output = new File(outputName);
 
         try {
@@ -71,14 +70,14 @@ public class Encryptor {
 
         List<String> fileContent = null;
         try {
-            fileContent = new ArrayList<>(Files.readAllLines(Paths.get(output.getPath().toString()), StandardCharsets.UTF_8));
+            fileContent = new ArrayList<>(Files.readAllLines(Paths.get(output.getPath()), StandardCharsets.UTF_8));
 
             StringBuilder sb = new StringBuilder();
             for (String s : fileContent) {
 
                 sb.append(s + "\n");
             }
-            String wholeFile = new String(sb.toString());
+            String wholeFile = new String(sb);
 
             wholeFile = wholeFile.replaceAll("\\s","");
 
@@ -104,7 +103,7 @@ public class Encryptor {
     private void extractValues() {
         Iterator<String> iterator1 = strings.iterator(); // create iterator
 
-        String next = ""; // we need this for later
+        String next;
         while (iterator1.hasNext()) { // is there a line to read
             next = iterator1.next(); // as a variable because we would jump to the next line when using iterator.next() again
             try {
@@ -114,14 +113,12 @@ public class Encryptor {
                     stringValues.add(matcher.group(1));
                 }
             } catch (Exception e) {
-                //TODO handle
+                e.printStackTrace();
             }
         }
 
-        Iterator<String> iterator2 = comments.iterator(); // create iterator
-
-        while (iterator2.hasNext()) { // is there a line to read
-            next = iterator2.next(); // as a variable because we would jump to the next line when using iterator.next() again
+        for (String comment : comments) { // is there a line to read
+            next = comment; // as a variable because we would jump to the next line when using iterator.next() again
             try {
                 Pattern pattern = Pattern.compile("(//.*)");
                 Matcher matcher = pattern.matcher(next);
@@ -129,14 +126,14 @@ public class Encryptor {
                     commentValues.add(matcher.group(1));
                 }
             } catch (Exception e) {
-                //TODO handle
+                e.printStackTrace();
             }
         }
 
     }
 
     private String encrypt(String strClearText, String strKey) throws Exception {
-        String strData="";
+        String strData;
 
         try {
             SecretKeySpec skeyspec=new SecretKeySpec(strKey.getBytes(), "Blowfish");
@@ -156,10 +153,10 @@ public class Encryptor {
         List<String> newComments = new ArrayList<>();
 
         try {
-            lines = Files.readAllLines(Paths.get(output.getPath().toString())); // read every line to the lines List
+            lines = Files.readAllLines(Paths.get(output.getPath())); // read every line to the lines List
 
             Iterator<String> iterator = lines.iterator(); // create iterator
-            String next = ""; // we need this for later
+            String next; // we need this for later
             while (iterator.hasNext()) { // is there a line to read
                 next = iterator.next(); // as a variable because we would jump to the next line when using iterator.next() again
                 try {
@@ -167,7 +164,7 @@ public class Encryptor {
                         newComments.add(next);
                     }
                 } catch (Exception e) {
-                    //TODO handle
+                    e.printStackTrace();
                 }
             }
             comments.addAll(newComments);
@@ -176,15 +173,15 @@ public class Encryptor {
             e.printStackTrace();
         }
 
-        List<String> fileContent = null;
+        List<String> fileContent;
         try {
-            fileContent = new ArrayList<>(Files.readAllLines(Paths.get(output.getPath().toString()), StandardCharsets.UTF_8));
+            fileContent = new ArrayList<>(Files.readAllLines(Paths.get(output.getPath()), StandardCharsets.UTF_8));
 
             for (int i = 0; i < fileContent.size(); i++) {
 
                 Iterator<String> iterator = comments.iterator(); // create iterator
 
-                String next = "";
+                String next;
                 while (iterator.hasNext()) { // is there a line to read
                     next = iterator.next(); // as a variable because we would jump to the next line when using iterator.next() again
 
@@ -205,7 +202,7 @@ public class Encryptor {
                 }
             }
 
-            Files.write(Paths.get(output.getPath().toString()), fileContent, StandardCharsets.UTF_8);
+            Files.write(Paths.get(output.getPath()), fileContent, StandardCharsets.UTF_8);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -218,7 +215,7 @@ public class Encryptor {
             lines = Files.readAllLines(Paths.get(Paths.get(output.getPath()).toString())); // read every line to the lines List
 
             Iterator<String> iterator = lines.iterator(); // create iterator
-            String next = ""; // we need this for later
+            String next; // we need this for later
             while (iterator.hasNext()) { // is there a line to read
                 next = iterator.next(); // as a variable because we would jump to the next line when using iterator.next() again
                 try {
@@ -226,7 +223,7 @@ public class Encryptor {
                         newStrings.add(next); // add every line to the list
                     }
                 } catch (Exception e) {
-                    //TODO handle
+                    e.printStackTrace();
                 }
             }
 
@@ -236,7 +233,7 @@ public class Encryptor {
             e.printStackTrace();
         }
 
-        List<String> fileContent = null;
+        List<String> fileContent;
         try {
             fileContent = new ArrayList<>(Files.readAllLines(Paths.get(output.getPath()), StandardCharsets.UTF_8));
 
@@ -244,13 +241,13 @@ public class Encryptor {
 
                 Iterator<String> iterator = strings.iterator(); // create iterator
 
-                String next = "";
+                String next;
                 while (iterator.hasNext()) { // is there a line to read
                     next = iterator.next(); // as a variable because we would jump to the next line when using iterator.next() again
 
                     if (fileContent.get(i).equals(next)) {
 
-                        String newLine = new String();
+                        String newLine = "";
                         Pattern pattern = Pattern.compile("(\\\"[^%]*\\\")");
                         Matcher matcher = pattern.matcher(next);
                         if (matcher.find()) {
@@ -268,16 +265,11 @@ public class Encryptor {
                         fileContent.set(i, newLine);
                         break;
                     }
-                    else {
-//                        System.out.println(next);
-                    }
                 }
             }
 
-            Files.write(Paths.get(output.getPath().toString()), fileContent, StandardCharsets.UTF_8);
+            Files.write(Paths.get(output.getPath()), fileContent, StandardCharsets.UTF_8);
 
-        } catch (IOException e) {
-            e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -316,13 +308,10 @@ public class Encryptor {
     private void viewCode() {
         System.out.println("Code:");
         try {
-            List<String> lines = Files.readAllLines(Paths.get(output.getPath().toString()));
+            List<String> lines = Files.readAllLines(Paths.get(output.getPath()));
 
-            Iterator<String> iterator = lines.iterator(); // create iterator
-
-            String next = ""; // we need this for later
-            while (iterator.hasNext()) { // is there a line to read
-                System.out.println(iterator.next());
+            for (String line : lines) { // is there a line to read
+                System.out.println(line);
             }
 
         } catch (IOException e) {
