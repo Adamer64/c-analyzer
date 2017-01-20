@@ -6,78 +6,99 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.security.InvalidKeyException;
-import java.security.Key;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Created by AB on 19.1.2017.
- */
 public class Encryptor {
 
-    protected File output;
-    protected List<String> lines;
-    protected List<String> strings = new ArrayList<>();
-    protected List<String> comments = new ArrayList<>();
-    protected List<String> stringValues = new ArrayList<>();
-    protected List<String> commentValues = new ArrayList<>();
-    protected String patternStrings = "(.*)(\")([^%]*)(\")(.*)";
-    protected String patternComments = "(.*)(//)(.*)";
+    private File output;
+    private String outputName = "./undefined.c";
 
-    public void processFile(String inputFile) throws IOException {
 
-        readFile(inputFile);
+    private List<String> lines;
+    private List<String> strings = new ArrayList<>();
+    private List<String> comments = new ArrayList<>();
+    private List<String> stringValues = new ArrayList<>();
+    private List<String> commentValues = new ArrayList<>();
+    private String patternStrings = "(.*)(\")([^%]*)(\")(.*)";
+    private String patternComments = "(.*)(//)(.*)";
 
-        String outputName = new String("./obfuscated_" + inputFile);
+    public Encryptor (String inputFile) {
+        outputName = new String("./obfuscated_" + inputFile);
         output = new File(outputName);
-        PrintWriter pw = new PrintWriter(output); // true for auto-flush
-        for (String line : lines) {
-            pw.println(line);
+
+        try {
+            lines = Files.readAllLines(Paths.get(inputFile));
+            PrintWriter pw = new PrintWriter(output);
+            for (String line : lines) {
+                pw.println(line);
+            }
+            pw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        pw.close();
+    }
+
+    public void obfuscate() throws IOException {
 
         extractValues();
-//        viewCode();
-        viewStrings();
-//        viewComments();
-
         deleteComments();
         encryptStrings();
+        removeWhitespace();
 
         viewCode();
     }
 
-    private void readFile(String inputFile) throws IOException {
+    private String insertCharAt(String st, char ch, int index){
+        //1 Exception if st == null
+        //2 Exception if index<0 || index>st.length()
 
-        List<String> newStrings = new ArrayList<>();
-        List<String> newComments = new ArrayList<>();
-
-        lines = Files.readAllLines(Paths.get(inputFile)); // read every line to the lines List
-        Iterator<String> iterator = lines.iterator(); // create iterator
-
-        String next = ""; // we need this for later
-        while (iterator.hasNext()) { // is there a line to read
-            next = iterator.next(); // as a variable because we would jump to the next line when using iterator.next() again
-            try {
-                if (next.matches(patternStrings)) { // match with defined pattern for strings
-//                    System.out.println(next);
-                    newStrings.add(next); // add every line to the list
-                }
-                if (next.matches(patternComments)){
-                    newComments.add(next);
-                }
-            } catch (Exception e) {
-                //TODO handle
-            }
+        if (st == null){
+            throw new NullPointerException("Null string!");
         }
 
-        strings.addAll(newStrings);
-        comments.addAll(newComments);
+        if (index < 0 || index > st.length())
+        {
+            throw new IndexOutOfBoundsException("Try to insert at negative location or outside of string");
+        }
+        return st.substring(0, index)+ch+st.substring(index, st.length());
+    }
+
+    private void removeWhitespace() {
+
+        List<String> fileContent = null;
+        try {
+            fileContent = new ArrayList<>(Files.readAllLines(Paths.get(output.getPath().toString()), StandardCharsets.UTF_8));
+
+            StringBuilder sb = new StringBuilder();
+            for (String s : fileContent) {
+
+                sb.append(s + "\n");
+            }
+            String wholeFile = new String(sb.toString());
+
+            wholeFile = wholeFile.replaceAll("\\s","");
+
+            int length = 50;
+            int i = 1;
+            while ( i * length < wholeFile.length()) {
+                wholeFile = insertCharAt(wholeFile, '\n', i * length);
+                i++;
+            }
+
+            PrintWriter out = new PrintWriter(output.getName());
+            out.println(wholeFile);
+            out.close();
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
     }
 
     private void extractValues() {
@@ -132,6 +153,29 @@ public class Encryptor {
     }
 
     private void deleteComments(){
+        List<String> newComments = new ArrayList<>();
+
+        try {
+            lines = Files.readAllLines(Paths.get(output.getPath().toString())); // read every line to the lines List
+
+            Iterator<String> iterator = lines.iterator(); // create iterator
+            String next = ""; // we need this for later
+            while (iterator.hasNext()) { // is there a line to read
+                next = iterator.next(); // as a variable because we would jump to the next line when using iterator.next() again
+                try {
+                    if (next.matches(patternComments)){
+                        newComments.add(next);
+                    }
+                } catch (Exception e) {
+                    //TODO handle
+                }
+            }
+            comments.addAll(newComments);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         List<String> fileContent = null;
         try {
             fileContent = new ArrayList<>(Files.readAllLines(Paths.get(output.getPath().toString()), StandardCharsets.UTF_8));
@@ -168,13 +212,33 @@ public class Encryptor {
     }
 
     private void encryptStrings() {
+
+        List<String> newStrings = new ArrayList<>();
+        try {
+            lines = Files.readAllLines(Paths.get(Paths.get(output.getPath()).toString())); // read every line to the lines List
+
+            Iterator<String> iterator = lines.iterator(); // create iterator
+            String next = ""; // we need this for later
+            while (iterator.hasNext()) { // is there a line to read
+                next = iterator.next(); // as a variable because we would jump to the next line when using iterator.next() again
+                try {
+                    if (next.matches(patternStrings)) { // match with defined pattern for strings
+                        newStrings.add(next); // add every line to the list
+                    }
+                } catch (Exception e) {
+                    //TODO handle
+                }
+            }
+
+            strings.addAll(newStrings);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         List<String> fileContent = null;
         try {
             fileContent = new ArrayList<>(Files.readAllLines(Paths.get(output.getPath()), StandardCharsets.UTF_8));
-
-            for (String s : fileContent) {
-                System.out.println(s);
-            }
 
             for (int i = 0; i < fileContent.size(); i++) {
 
@@ -186,8 +250,6 @@ public class Encryptor {
 
                     if (fileContent.get(i).equals(next)) {
 
-                        System.out.println(next);
-
                         String newLine = new String();
                         Pattern pattern = Pattern.compile("(\\\"[^%]*\\\")");
                         Matcher matcher = pattern.matcher(next);
@@ -195,12 +257,7 @@ public class Encryptor {
 
                             String string = matcher.group(1);
 
-                            System.out.println(string);
-
                             String encrypted = encrypt(string, "ajobilec");
-
-                            System.out.println(string);
-                            System.out.println(encrypted);
 
                             if (next.contains(string)) {
 
@@ -212,7 +269,7 @@ public class Encryptor {
                         break;
                     }
                     else {
-                        System.out.println(next);
+//                        System.out.println(next);
                     }
                 }
             }
