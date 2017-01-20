@@ -25,7 +25,6 @@ public class Analyzer {
     public void Analyzer() {
     }
 
-
     public void readFile(String inputFile) throws IOException {
         String next = ""; // we need this for later
         List<String> newIncludes = new ArrayList<>(); // we can't just add to the original List
