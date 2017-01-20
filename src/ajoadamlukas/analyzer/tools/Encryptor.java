@@ -109,7 +109,8 @@ public class Encryptor {
             e.printStackTrace();
         }
 
-        return thedigest.toString();
+        return new String("\"" + thedigest.toString() + "\"");
+//        return thedigest.toString();
     }
 
     private String encrypt(String strClearText, String strKey) throws Exception {
