@@ -25,7 +25,6 @@ public class Obfuscator {
     }
 
     private static void obfuscate(String inputFile) {
-
         // output definition
         String outputName = "./obfuscated_" + inputFile;  // outputfile name definition
         output = new File(outputName);
