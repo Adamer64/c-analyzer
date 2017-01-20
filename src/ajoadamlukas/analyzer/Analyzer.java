@@ -74,7 +74,7 @@ public class Analyzer {
         }
         else
         {
-            System.out.println("Second run:");
+//            System.out.println("Second run:");
             lines = Files.readAllLines(Paths.get(inputFile)); // read every line to the lines List
             Iterator<String> varIterator = getVariableNames().iterator();
             List<String> tempLines = new ArrayList<>();
@@ -82,7 +82,7 @@ public class Analyzer {
             String[] nextVar = new String[getVariableNames().size()];
             while(varIterator.hasNext()) {
                 nextVar[i] = varIterator.next();
-                System.out.println(nextVar[i]);
+//                System.out.println(nextVar[i]);
                 i++;
             }
             int k=0;
@@ -106,13 +106,13 @@ public class Analyzer {
                             boolean found = false;
                             while (found = m.find()) { // did we find anything?
                                 String rest="";
-                                System.out.println("WTF: "+ m.group(1) );
+//                                System.out.println("WTF: "+ m.group(1) );
                                 rest = m.group(2);
                                 m.appendReplacement(sBuffer, Matcher.quoteReplacement(randomString+rest));
                             }
-                            System.out.println("Replacing: ");
+//                            System.out.println("Replacing: ");
                             m.appendTail(sBuffer);
-                            System.out.println(sBuffer.toString());
+//                            System.out.println(sBuffer.toString());
                             newLinesAdded.add(sBuffer.toString());
                         }
                         else {
@@ -169,7 +169,7 @@ public class Analyzer {
     }
 
     public void viewNewLines() {
-        System.out.println("Output:");
+//        System.out.println("Output:");
         Iterator<String> iterator = getNewLines().iterator(); // iterate
         while (iterator.hasNext()) {
             System.out.println(iterator.next()); // print it
